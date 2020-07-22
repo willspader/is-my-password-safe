@@ -6,7 +6,7 @@ Return how many times a password has been leaked. It uses haveibeenpwned API.
 
 ### Amazon Lambda
 
-Send a HTTP Post to the below AWS Lambda
+Send an HTTP Post to the below AWS Lambda
 
 API link: https://1lt61j4agg.execute-api.sa-east-1.amazonaws.com/prod/check-password
 
