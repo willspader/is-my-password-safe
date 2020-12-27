@@ -1,4 +1,4 @@
-# IS MY PASWORD SAFE
+# IS MY PASSWORD SAFE
 
 ### What is it
 
