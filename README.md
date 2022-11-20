@@ -20,7 +20,7 @@ HTTP POST
 ```
 {
     "password": "Password1",
-    "occurrences": "118930",
+    "occurrences": 118930,
     "sha1": "70CCD9007338D6D81DD3B6271621B9CF9A97EA00"
 }
 ```
