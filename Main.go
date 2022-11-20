@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -16,7 +17,7 @@ type pwdRequest struct {
 
 type pwdResponse struct {
 	Password    string `json:"password"`
-	Occurrences string `json:"occurrences"`
+	Occurrences int    `json:"occurrences"`
 	Sha1        string `json:"sha1"`
 }
 
@@ -83,9 +84,17 @@ func checkPasswordService(request pwdRequest) pwdResponse {
 	checkPwd := pwdMap[result]
 	var httpResponse pwdResponse
 	if pwdMap[result] != "" {
+		intpwd, err := strconv.Atoi(checkPwd)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
 		httpResponse.Password = pwd
-		httpResponse.Occurrences = checkPwd
+		httpResponse.Occurrences = intpwd
 		httpResponse.Sha1 = orig
+	} else {
+		httpResponse.Password = pwd
+		httpResponse.Occurrences = 0
 	}
 	return httpResponse
 }
