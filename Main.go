@@ -8,9 +8,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-
-	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-lambda-go/lambda"
 )
 
 type pwdRequest struct {
@@ -23,39 +20,40 @@ type pwdResponse struct {
 	Sha1        string `json:"sha1"`
 }
 
-func router(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	log.Printf("req-method: %s", req.HTTPMethod)
-	if req.Path == "/check-password" {
-		if req.HTTPMethod == "POST" {
-			return checkPasswordHandler(req)
-		}
-	}
-	return events.APIGatewayProxyResponse{
-		StatusCode: http.StatusMethodNotAllowed,
-		Body:       http.StatusText(http.StatusMethodNotAllowed),
-	}, nil
+func main() {
+	router()
 }
 
-func checkPasswordHandler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func router() {
+	http.HandleFunc("/check-password", checkPasswordHandler)
+
+	http.ListenAndServe(":8080", nil)
+}
+
+func checkPasswordHandler(w http.ResponseWriter, req *http.Request) {
+
 	var request pwdRequest
-	err := json.Unmarshal([]byte(req.Body), &request)
-	if err != nil {
-		return events.APIGatewayProxyResponse{
-			StatusCode: http.StatusInternalServerError,
-			Body:       http.StatusText(http.StatusInternalServerError),
-		}, nil
+	json.NewDecoder(req.Body).Decode(&request)
+
+	if req.Method != "POST" {
+		http.Error(w, "Only HTTP POST Method is allowed", http.StatusMethodNotAllowed)
+		return
 	}
-	response, err := json.Marshal(checkPasswordService(request))
-	if err != nil {
-		return events.APIGatewayProxyResponse{
-			StatusCode: http.StatusInternalServerError,
-			Body:       http.StatusText(http.StatusInternalServerError),
-		}, nil
+
+	var response pwdResponse = checkPasswordService(request)
+
+	bytesResponse, jsonMarshalErr := json.Marshal(response)
+	if jsonMarshalErr != nil {
+		http.Error(w, jsonMarshalErr.Error(), http.StatusInternalServerError)
+		return
 	}
-	return events.APIGatewayProxyResponse{
-		StatusCode: http.StatusOK,
-		Body:       string(response),
-	}, nil
+
+	_, writeErr := w.Write(bytesResponse)
+	if writeErr != nil {
+		http.Error(w, writeErr.Error(), http.StatusInternalServerError)
+		return
+	}
+
 }
 
 func checkPasswordService(request pwdRequest) pwdResponse {
@@ -70,7 +68,7 @@ func checkPasswordService(request pwdRequest) pwdResponse {
 	}
 	defer response.Body.Close()
 	orig := result
-	result = result[5:len(result)]
+	result = result[5:]
 	contents, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		log.Fatalln(err)
@@ -90,7 +88,4 @@ func checkPasswordService(request pwdRequest) pwdResponse {
 		httpResponse.Sha1 = orig
 	}
 	return httpResponse
-}
-func main() {
-	lambda.Start(router)
 }
