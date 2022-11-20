@@ -1,22 +1,22 @@
 # IS MY PASSWORD SAFE
 
-### What is it
+## What is it
 
 Return how many times a password has been leaked. It uses haveibeenpwned API.
+It uses https://api.pwnedpasswords.com/range/ to get a list of hashes that has the first 5 bytes equal to the first 5 bytes of the typed password, then iterates over the list to find the correspondent hash.
 
-### Amazon Lambda
+## Input
 
-Send an HTTP Post to the below AWS Lambda
+HTTP POST
 
-API link: https://1lt61j4agg.execute-api.sa-east-1.amazonaws.com/prod/check-password
-
-#### Input
 ```
 {
     "password": "Password1"
 }
 ```
-#### Output
+
+## Output
+
 ```
 {
     "password": "Password1",
